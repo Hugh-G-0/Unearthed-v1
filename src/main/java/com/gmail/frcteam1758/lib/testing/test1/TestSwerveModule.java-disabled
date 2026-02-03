@@ -1,0 +1,56 @@
+package com.gmail.frcteam1758.lib.testing.test1;
+
+import com.gmail.frcteam1758.lib.swervedrive.MaxSwerveModule;
+
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
+
+public class TestSwerveModule extends TimedRobot {
+
+    static final Rotation2d
+        R1 = Rotation2d.fromDegrees(0),
+        R2 = Rotation2d.fromDegrees(90);
+    
+    Rotation2d currentTarget = R1;
+
+    static final double DRIVE_MOTOR_REDUCTION = (0.0762 * Math.PI) / 14 * 15;
+
+    XboxController ctrl = new XboxController(0);
+
+    MaxSwerveModule module =
+        new MaxSwerveModule(5, 6, new Translation2d());
+    
+    public static void main(String[] args) {
+        RobotBase.startRobot(TestSwerveModule::new);
+    }
+
+    public void genericConfig() {
+        
+    }
+
+    @Override
+    public void robotInit() {
+        genericConfig();
+    }
+
+    @Override
+    public void teleopInit() {
+        genericConfig();
+    }
+
+    @Override
+    public void teleopPeriodic() {
+
+        module.run(
+            new SwerveModuleState(
+                ctrl.getLeftY(),
+                Rotation2d.fromDegrees(ctrl.getPOV())
+            )
+        );
+
+    }
+}

@@ -1,0 +1,75 @@
+package com.gmail.frcteam1758.lib.testing.test1;
+
+import com.gmail.frcteam1758.lib.enums.SwerveDriveMode;
+import com.gmail.frcteam1758.lib.swervedrive.MaxSwerveConstants;
+import com.gmail.frcteam1758.lib.swervedrive.SwerveChassis;
+import com.gmail.frcteam1758.lib.swervedrive.MaxSwerveModule;
+import com.gmail.frcteam1758.lib.swervedrive.control.SwerveDriveControls2023;
+import com.gmail.frcteam1758.lib.swervedrive.control.SwerveDriveInput;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.ADIS16470_IMU;
+import edu.wpi.first.wpilibj.RobotBase;
+import edu.wpi.first.wpilibj.TimedRobot;
+
+public class TestSwerveChassis extends TimedRobot {
+
+    ADIS16470_IMU m_gyro = new ADIS16470_IMU();
+    
+    SwerveDriveInput m_ctrl = new SwerveDriveControls2023(
+        0,
+        1,
+        () -> Rotation2d.fromDegrees(m_gyro.getAngle(ADIS16470_IMU.IMUAxis.kZ)),
+        SwerveDriveMode.FIELD_ORIENTED,
+        MaxSwerveConstants.DriveConstants.kMaxSpeedMetersPerSecond,
+        MaxSwerveConstants.DriveConstants.kMaxAngularSpeed
+    );
+
+    MaxSwerveModule[] m_modules = {
+        new MaxSwerveModule( 12,  9, new Translation2d(0.26,  -0.26)),
+        new MaxSwerveModule( 5, 6, new Translation2d(-0.26, -0.26)),
+        new MaxSwerveModule( 11,  7, new Translation2d( -0.26,  0.26)),
+        new MaxSwerveModule(8, 10, new Translation2d( 0.26, 0.26))
+    };
+
+    SwerveChassis m_drivetrain = new SwerveChassis(
+        m_ctrl,
+        SwerveDriveInput.NO_INPUT,
+        m_modules,
+        MaxSwerveConstants.DriveConstants.kMaxSpeedMetersPerSecond,
+        () -> Rotation2d.fromDegrees(m_gyro.getAngle(ADIS16470_IMU.IMUAxis.kZ))
+    );
+
+    @Override
+    public void teleopPeriodic() {
+        m_drivetrain.performTeleop();
+    }
+
+    @Override
+    public void close() /*throws Exception*/ {
+        for (var i : m_modules) {
+            try {
+                i.close();
+            }
+            catch (Exception e) {
+                System.out.println("Unable to close module " + i + " due to an Exception");
+            }
+        }
+        super.close();
+    }
+
+    public static void main(String[] args) {
+        
+        try (var chassis = new TestSwerveChassis()) {
+
+            RobotBase.startRobot(() -> chassis);
+        }
+        catch (Exception e) {
+            System.out.println(
+                "An Exception was thrown. The close() methods of all swerve modules as well"+
+                "as super.close() have been called."
+            );
+            e.printStackTrace();
+        }
+    }
+}

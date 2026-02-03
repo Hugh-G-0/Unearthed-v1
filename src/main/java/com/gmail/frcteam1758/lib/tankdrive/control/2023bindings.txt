@@ -1,0 +1,19 @@
+
+
+ARCADE DRIVE CONTROLS:
+
+    Throttle : left stick y-axis
+    Steering : right stick x-axis
+
+TANK DRIVE CONTROLS:
+
+    Left  : left stick y-axis
+    Right : right stick y-axis
+
+ADVANCED CONTROLS:
+    
+    Speed Multiplier Up   : right stick button
+    Speed Multiplier Down : left stick button
+
+    Reverse (toggle) : Y button
+    Brakes  (toggle) : idk
