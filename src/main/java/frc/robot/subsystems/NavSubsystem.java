@@ -70,4 +70,12 @@ public class NavSubsystem extends SubsystemBase {
     public boolean hasVisionPose() {
         return false; //TODO(vision team): implement #hasVisionPose()
     }
+
+    /**
+     * @return the timestamp of the availible vision pose (if it exists)
+     */
+    public double getVisionTimestamp() {
+        //TODO(vision team) implement #getVisionTimestamp()
+        return 0;
+    }
 }

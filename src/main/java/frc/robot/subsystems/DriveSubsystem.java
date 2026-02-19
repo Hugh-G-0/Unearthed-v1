@@ -1,7 +1,7 @@
 package frc.robot.subsystems;
 
 import com.gmail.frcteam1758.lib.enums.SwerveDriveMode;
-import com.gmail.frcteam1758.lib.swervedrive.SwerveChassis;
+import com.gmail.frcteam1758.lib.swervedrive.SwerveChassis2;
 import com.gmail.frcteam1758.lib.swervedrive.control.SwerveDriveControls2023;
 import com.gmail.frcteam1758.lib.swervedrive.control.SwerveDriveInput;
 import com.gmail.frcteam1758.lib.swervedrive.control.SwerveDriveState;
@@ -45,7 +45,7 @@ public class DriveSubsystem extends SubsystemBase {
         4.0
     );
 
-    private final SwerveChassis chassis = new SwerveChassis(
+    private final SwerveChassis2 chassis = new SwerveChassis2(
         controls,
         SwerveDriveInput.NO_INPUT,
         modules, 4.0, NavSubsystem.X::getAngle);
@@ -57,9 +57,12 @@ public class DriveSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
 
-        this.chassis.getPose();
-        
-        if (NavSubsystem.X.hasVisionPose()) { this.chassis.resetPose(NavSubsystem.X.getPose()); }
+        if (NavSubsystem.X.hasVisionPose()) {
+            this.chassis.getPose(NavSubsystem.X.getPose(), NavSubsystem.X.getVisionTimestamp());
+        }
+        else {
+            this.chassis.getPose();
+        }
 
         SmartDashboard.putNumber("chassisSpeedX", this.controls.getCommandedState().speeds.vxMetersPerSecond);
         SmartDashboard.putNumber("chassisSpeedY", this.controls.getCommandedState().speeds.vyMetersPerSecond);
