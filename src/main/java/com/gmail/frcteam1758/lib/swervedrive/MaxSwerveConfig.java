@@ -4,6 +4,11 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+/**
+ * default configuration for NEO-based MaxSwerveModules ({@link MaxSwerveModule}s)
+ * 
+ * you should not need to edit this file
+ */
 public final class MaxSwerveConfig {
     public static final class MAXSwerveModule {
         public static final SparkMaxConfig drivingConfig = new SparkMaxConfig();
@@ -11,10 +16,10 @@ public final class MaxSwerveConfig {
 
         static {
             // Use module constants to calculate conversion factors and feed forward gain.
-            double drivingFactor = MaxSwerveConstants.ModuleConstants.kWheelDiameterMeters * Math.PI
+            final double drivingFactor = MaxSwerveConstants.ModuleConstants.kWheelDiameterMeters * Math.PI
                     / MaxSwerveConstants.ModuleConstants.kDrivingMotorReduction;
-            double turningFactor = 2 * Math.PI;
-            double drivingVelocityFeedForward = 1 / MaxSwerveConstants.ModuleConstants.kDriveWheelFreeSpeedRps;
+            final double turningFactor = 2 * Math.PI;
+            final double drivingVelocityFeedForward = 1 / MaxSwerveConstants.ModuleConstants.kDriveWheelFreeSpeedRps;
 
             drivingConfig
                     .idleMode(IdleMode.kBrake)

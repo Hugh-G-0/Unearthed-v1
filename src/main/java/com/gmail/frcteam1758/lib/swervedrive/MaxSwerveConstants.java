@@ -17,6 +17,12 @@ import edu.wpi.first.math.util.Units;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 /**
+ * Constant values for MaxSwerve hardware.
+ * 
+ * DO NOT EDIT/DELETE ANY EXISTING VALUES
+ * 
+ * from REV:
+ * 
  * The Constants class provides a convenient place for teams to hold robot-wide
  * numerical or boolean
  * constants. This class should not be used for any other purpose. All constants

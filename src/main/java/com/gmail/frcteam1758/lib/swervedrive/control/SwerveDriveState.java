@@ -2,6 +2,9 @@ package com.gmail.frcteam1758.lib.swervedrive.control;
 
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 
+/**
+ * a {@link ChassisSpeeds but with the option to enter "locked"/"X" configuration}
+ */
 public class SwerveDriveState {
     
     public ChassisSpeeds speeds;
@@ -19,7 +22,7 @@ public class SwerveDriveState {
 
     public SwerveDriveState() {
 
-        speeds = null;
+        speeds = new ChassisSpeeds();
 
         lock = true;
     }

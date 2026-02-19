@@ -15,6 +15,13 @@ public class Robot extends TimedRobot {
     public Robot() {
         DriveSubsystem.X.register();
         NavSubsystem  .X.register();
+
+        NavSubsystem.X.zeroAngle();
+    }
+
+    @Override
+    public void robotInit() {
+        DriveSubsystem.X.reConfig();
     }
 
     @Override

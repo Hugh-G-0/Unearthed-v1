@@ -3,6 +3,7 @@ package com.gmail.frcteam1758.lib.swervedrive.vortex;
 import com.gmail.frcteam1758.lib.swervedrive.SwerveModule;
 import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.PersistMode;
+import com.revrobotics.REVLibError;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
@@ -17,7 +18,14 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import com.gmail.frcteam1758.lib.swervedrive.SwerveChassis;
 
+/**
+ * class representing a MaxSwerve Module equiped with Vortex motors.
+ * 
+ * Should be used with {@link SwerveChassis} or similar
+ */
 public class VortexSwerveModule implements SwerveModule{
     
     // driveing and steering mototrcontrollers
@@ -57,11 +65,17 @@ public class VortexSwerveModule implements SwerveModule{
         SparkMaxConfig pSteerConfig,
         Translation2d pPosition
     ) {
+        VortexSwerveDefaults.prepareConfigs();
+
         this.driveMC = new SparkFlex(pDriveCAN, MotorType.kBrushless);
         this.steerMC = new SparkMax (pSteerCan, MotorType.kBrushless);
 
-        this.driveMC.configure(pDriveCfg, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        this.steerMC.configure(pDriveCfg, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        REVLibError eD = this.driveMC.configure(pDriveCfg, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        REVLibError eS = this.steerMC.configure(pDriveCfg, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+        if (eD != REVLibError.kOk || eS != REVLibError.kOk) {
+            throw new RuntimeException("mc config error");
+        }
 
         this.driveEncoder = this.driveMC.getEncoder        ();
         this.steerEncoder = this.steerMC.getAbsoluteEncoder();
@@ -92,12 +106,44 @@ public class VortexSwerveModule implements SwerveModule{
         );
     }
 
+    /**
+     * Constructs a {@link VortexSwerveModule} with default configs (usually fine)
+     * 
+     * @param pDriveCAN CAN id of driving (Vortex) motor
+     * @param pSteerCan CAN id of steering (Neo550) motor
+     * @param pPosition position of module relative to center of rotation
+     */
     public VortexSwerveModule(int pDriveCAN, int pSteerCAN, Translation2d pPosition) {
         this(pDriveCAN, VortexSwerveDefaults.kDriveCfg, pSteerCAN, VortexSwerveDefaults.kSteerCfg, pPosition);
     }
 
+    /**
+     * reapplys configs in case of error. (shouldn't be used)
+     */
+    public void reConfig() {
+        this.driveMC.configure(
+            VortexSwerveDefaults.kDriveCfg,
+            ResetMode.kResetSafeParameters,
+            PersistMode.kPersistParameters
+        );
+        this.steerMC.configure(
+            VortexSwerveDefaults.kSteerCfg,
+            ResetMode.kResetSafeParameters,
+            PersistMode.kPersistParameters
+        );
+    }
+
+    /**
+     * causes this module's motors to approch the given {@link SwerveModuleState}
+     * <p>
+     * will usually be called by {@link SwerveChassis#run()}, not directly
+     * <p>
+     * editing some SmartDahboard calls may be helpful for debugging
+     */
     @Override
     public void run(SwerveModuleState pState) {
+
+        pState = new SwerveModuleState(pState.speedMetersPerSecond, pState.angle);
 
         //account for angular offset of module
         pState.angle = pState.angle.plus(this.angularOffset);
@@ -105,8 +151,37 @@ public class VortexSwerveModule implements SwerveModule{
         //consider reversing direction to avoid >90deg turns
         pState.optimize(new Rotation2d(this.steerEncoder.getPosition()));
 
+        SmartDashboard.putNumber(
+            "m%d aVel".formatted(this.driveMC.getDeviceId()),
+            Math.abs(this.getState().speedMetersPerSecond)
+        );
+
+        SmartDashboard.putNumber(
+            "m%d tVel".formatted(this.driveMC.getDeviceId()),
+            Math.abs(pState.speedMetersPerSecond)
+        );
+
+        SmartDashboard.putNumber(
+            "m%d dVel".formatted(this.driveMC.getDeviceId()),
+            Math.abs(this.getState().speedMetersPerSecond) - Math.abs(pState.speedMetersPerSecond)
+        );
+
+        SmartDashboard.putNumber(
+            "m%d cVel".formatted(this.driveMC.getDeviceId()),
+            Math.abs(pState.speedMetersPerSecond)
+        );
+
+        try  {
+            SmartDashboard.putNumber(
+                "m%d rVel".formatted(this.driveMC.getDeviceId()),
+                Math.abs(pState.speedMetersPerSecond) / Math.abs(this.getState().speedMetersPerSecond)
+            );
+        } catch (Exception e) {}
+
         this.drivePID.setSetpoint(pState.speedMetersPerSecond, ControlType.kVelocity);
         this.steerPID.setSetpoint(pState.angle.getRadians()  , ControlType.kPosition);
+
+
     }
 
     @Override
@@ -128,9 +203,17 @@ public class VortexSwerveModule implements SwerveModule{
         );
     }
 
+    /**
+     * causes this module to enter "locked"/"X" configuration.
+     * <p>
+     * Should generally be called by {@link SwerveChassis#run()}, not directly
+     */
     @Override
     public void lock() { this.run(this.lockedState); }
 
+    /**
+     * resets the accumulation of {@link #getPosition()}
+     */
     @Override
     public void resetPosition() {
         this.driveEncoder.setPosition(0);
@@ -139,10 +222,14 @@ public class VortexSwerveModule implements SwerveModule{
     @Override
     public Translation2d getTranslation() {
 
-        // avoid giving a reference
-        return this.position.times(1);
+        return this.position;
     }
 
+    /**
+     * releases system resources on power-down
+     * <p>
+     * should generally be called by {@link SwerveChassis#close()}, not directly
+     */
     @Override
     public void close() throws Exception /* allow subclass to throw exception*/ {
         this.driveMC.close();

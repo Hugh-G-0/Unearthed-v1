@@ -13,7 +13,11 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import com.gmail.frcteam1758.lib.swervedrive.vortex.VortexSwerveModule;
 
+/**
+ * obsolete; use {@link VortexSwerveModule} instead
+ */
 public class MaxSwerveModule implements SwerveModule {
 
     protected final SparkMax m_drvMtr, m_strMtr;
@@ -74,7 +78,10 @@ public class MaxSwerveModule implements SwerveModule {
     }
 
     @Override
-    public void run(SwerveModuleState p_state) {
+    public void run(SwerveModuleState p_state0) {
+
+        SwerveModuleState p_state = new SwerveModuleState(p_state0.speedMetersPerSecond, p_state0.angle);
+
         p_state.angle = p_state.angle.plus(m_angularOffset);
 
         p_state.optimize(new Rotation2d(m_strEncoder.getPosition()));
@@ -85,7 +92,7 @@ public class MaxSwerveModule implements SwerveModule {
         SmartDashboard.putNumber("setpoit", p_state.angle.getDegrees());
     }
 
-    @Override
+    
     public void setDesiredState(SwerveModuleState desiredState) {
         // Apply chassis angular offset to the desired state.
         SwerveModuleState correctedDesiredState = new SwerveModuleState();

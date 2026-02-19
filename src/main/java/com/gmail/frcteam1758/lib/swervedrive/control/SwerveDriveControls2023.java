@@ -17,6 +17,10 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj.Joystick;
 
+/**
+ * The main implementation of {@link SwerveDriveInput}. I took most of this from the
+ * publicly availible rev demo code
+ */
 public class SwerveDriveControls2023 implements SwerveDriveInput {
 
     protected Joystick m_leftStick, m_rightStick;
@@ -135,6 +139,9 @@ public class SwerveDriveControls2023 implements SwerveDriveInput {
         return -MathUtil.applyDeadband(x, MaxSwerveConstants.OIConstants.kDriveDeadband);
     }
 
+    /**
+     * @return a {@link SwerveDriveState} object for use by a {@link SwerveChassis} or similar
+     */
     @Override
     public SwerveDriveState getCommandedState() {
 

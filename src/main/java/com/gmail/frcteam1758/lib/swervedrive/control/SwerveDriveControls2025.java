@@ -15,6 +15,10 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.WPIUtilJNI;
 import edu.wpi.first.wpilibj.Joystick;
 
+
+/**
+ * this class does not work don't worry about it
+ */
 public class SwerveDriveControls2025 implements SwerveDriveInput {
 
     protected final Joystick m_leftStick, m_rightStick;

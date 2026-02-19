@@ -16,7 +16,7 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 /**
- * defines a fully-integrated swerve drive which o
+ * manages a collection of {@link SwerveModule} objects to create a functional drivetrain
  */
 public class SwerveChassis implements AutoCloseable {
     
@@ -32,6 +32,10 @@ public class SwerveChassis implements AutoCloseable {
 
     protected Supplier<Rotation2d> m_angleSupplier;
 
+    /**
+     * causes the chassis to drive at the specified state
+     * @param p_state
+     */
     public void run(SwerveDriveState p_state) {
 
         if (p_state.lock) {
@@ -62,8 +66,12 @@ public class SwerveChassis implements AutoCloseable {
      * @param p_modules a {@link SwerveModule}{@code []} of the modules to be used
      * @param p_maxSpeed the maximum attainable/allowable translation speed
      * @param p_angleSupplier a {@link Supplier}{@code <}{@link Rotation2d}{@code >} which will be
-     * used to obtain the robot's orientation. If {@code null} is given, any attemp to use odometry will
+     * used to obtain the robot's orientation. If {@code null} is given, any attempt to use odometry will
      * result in a {@link SwerveChassis.OdometryUnavalibleError}
+     * <p>
+     * {@link SwerveDriveInput.NO_INPUT} should be used if no {@link SwerveDriveInput} is availible/desired
+     * <p>
+     * {@code null} should be used if no gyro is availible
      */
     public SwerveChassis(
         SwerveDriveInput p_ctrl,
@@ -100,7 +108,7 @@ public class SwerveChassis implements AutoCloseable {
      * <p>
      * Example:
      * <code>
-     * try (BasicSwerveDrive4x sd = ...) {...}
+     * try (SwerveChassis sd = ...) {...}
      * </code>
      * <p>
      * At the closing <code>}</code>, {@code sd.close()} will have been called

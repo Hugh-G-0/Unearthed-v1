@@ -6,6 +6,11 @@ import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+/**
+ * default configuration for Vortex-based MaxSwerveModules ({@link VortexSwerveModule}s)
+ * 
+ * you should not need to edit this file
+ */
 public class VortexSwerveDefaults {
 
     // prevent creation of useless instances
@@ -22,10 +27,15 @@ public class VortexSwerveDefaults {
 
     private static final double kSteeringCoefficient = 2 * Math.PI;
 
-    private static final double kDrivingFFV = 1 / MaxSwerveConstants.ModuleConstants.kVortexDriveWheelFreeSpeedRps;
+    private static final double kDrivingFFV = 12.3 / MaxSwerveConstants.ModuleConstants.kVortexDriveWheelFreeSpeedRps;
+
+    private static boolean isReady = false;
 
     // apply configs
-    static {
+    public static void prepareConfigs() {
+
+        if (isReady) return;
+
         kDriveCfg
             .idleMode(IdleMode.kBrake)
             .smartCurrentLimit(50)
@@ -33,7 +43,7 @@ public class VortexSwerveDefaults {
 
         kDriveCfg.encoder
             .positionConversionFactor(kDrivingCoefficient)
-            .velocityConversionFactor(kDrivingCoefficient)
+            .velocityConversionFactor(kDrivingCoefficient / 60)
         ;
 
         kDriveCfg.closedLoop
@@ -52,7 +62,7 @@ public class VortexSwerveDefaults {
         kSteerCfg.absoluteEncoder
             .inverted(true)
             .positionConversionFactor(kSteeringCoefficient)
-            .velocityConversionFactor(kSteeringCoefficient)
+            .velocityConversionFactor(kSteeringCoefficient / 60)
         ;
 
         kSteerCfg.closedLoop
@@ -60,7 +70,7 @@ public class VortexSwerveDefaults {
             .pid(1,0,0)
             .outputRange(-1, 1)
             .positionWrappingEnabled(true)
-            .positionWrappingInputRange(0,kSteeringCoefficient)
+            .positionWrappingInputRange(0, kSteeringCoefficient)
         ;
     }
 }
