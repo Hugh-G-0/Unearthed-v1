@@ -2,7 +2,6 @@ package frc.robot.subsystems.visiondeps;
 
 import java.io.IOException;
 import java.util.Optional;
-
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
@@ -28,7 +27,9 @@ public class PhotonVisionWrapper {
     private final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
 
-    public PhotonVisionWrapper() throws IOException {
+    public static final PhotonVisionWrapper X = PhotonVisionWrapper.create();
+
+    private PhotonVisionWrapper() throws IOException {
         camera = new PhotonCamera(VisionConstants.CAMERA_NAME);
 
         AprilTagFieldLayout fieldLayout =
@@ -43,6 +44,15 @@ public class PhotonVisionWrapper {
             PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
             robotToCam
         );
+    }
+
+    private static PhotonVisionWrapper create() {
+        try {
+            return new PhotonVisionWrapper();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /** Cheap, non-blocking read of the latest pipeline result. */

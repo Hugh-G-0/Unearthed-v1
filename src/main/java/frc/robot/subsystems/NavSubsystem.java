@@ -10,6 +10,8 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import frc.robot.subsystems.visiondeps.PhotonVisionWrapper;
+
 public class NavSubsystem extends SubsystemBase {
 
     public static final NavSubsystem X = new NavSubsystem();
@@ -18,13 +20,16 @@ public class NavSubsystem extends SubsystemBase {
 
     private Rotation2d oldAngle = new Rotation2d();
     private Rotation2d newAngle = new Rotation2d();
-    
+
+    // Vision tracking fields
+    private Pose2d visionPose = null;
+    private double visionTimestamp = 0;
+
     private NavSubsystem() {}
 
     @Override
     public void periodic() {
         // periodic vision stuff
-
         SmartDashboard.putNumber("gyro (deg)", this.getAngle().getDegrees());
 
         this.oldAngle = this.newAngle;
@@ -32,9 +37,9 @@ public class NavSubsystem extends SubsystemBase {
     }
 
     public Pose2d getPose() {
-
-        if (this.hasVisionPose()) { return this.getVisionPose(); }
-
+        if (this.hasVisionPose()) {
+            return this.getVisionPose();
+        }
         return DriveSubsystem.X.getOdometricPose();
     }
 
@@ -43,10 +48,9 @@ public class NavSubsystem extends SubsystemBase {
     }
 
     /**
-     * @return the orietation of the robot
+     * @return the orientation of the robot
      */
     public Rotation2d getAngle() {
-
         return this.gyro.getRotation2d().times(-1);
     }
 
@@ -61,21 +65,46 @@ public class NavSubsystem extends SubsystemBase {
      * @return the position of the robot as determined by vision systems
      */
     private Pose2d getVisionPose() {
-        return null; //TODO(vision team): implement #getVisionPose()
+        return this.visionPose;
     }
 
     /**
-     * @return whether or not a viable vision-based pose is availible
+     * @return whether or not a viable vision-based pose is available
      */
     public boolean hasVisionPose() {
-        return false; //TODO(vision team): implement #hasVisionPose()
+        this.updateVisionPose(PhotonVisionWrapper.X);
+
+        return this.visionPose != null;
     }
 
     /**
-     * @return the timestamp of the availible vision pose (if it exists)
+     * @return the timestamp of the available vision pose (if it exists)
      */
     public double getVisionTimestamp() {
-        //TODO(vision team) implement #getVisionTimestamp()
-        return 0;
+        return this.visionTimestamp;
+    }
+
+    /**
+     * Call this method periodically to update the vision pose.
+     */
+    private void updateVisionPose(PhotonVisionWrapper photonVision) {
+        if (photonVision == null) {
+            this.visionPose = null;
+            this.visionTimestamp = 0;
+            return;
+        }
+
+        Pose2d prevPose = DriveSubsystem.X.getOdometricPose();
+        var result = photonVision.getLatestResult();
+        var estimateOpt = photonVision.getEstimatedGlobalPose(prevPose, result);
+
+        if (estimateOpt.isPresent()) {
+            var estimate = estimateOpt.get();
+            this.visionPose = estimate.estimatedPose.toPose2d();
+            this.visionTimestamp = estimate.timestampSeconds;
+        } else {
+            this.visionPose = null;
+            this.visionTimestamp = 0;
+        }
     }
 }
