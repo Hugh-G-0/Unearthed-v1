@@ -6,6 +6,7 @@ import com.gmail.frcteam1758.lib.swervedrive.control.SwerveDriveControls2023;
 import com.gmail.frcteam1758.lib.swervedrive.control.SwerveDriveInput;
 import com.gmail.frcteam1758.lib.swervedrive.control.SwerveDriveState;
 import com.gmail.frcteam1758.lib.swervedrive.vortex.VortexSwerveModule;
+import com.pathplanner.lib.util.DriveFeedforwards;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -19,19 +20,19 @@ public class DriveSubsystem extends SubsystemBase {
     private final VortexSwerveModule[] modules = {
 
         new VortexSwerveModule(
-            1, 5,
+            11, 10,
             new Translation2d( Constants.kWheelBaseX,  Constants.kWheelBaseY)
         ),
         new VortexSwerveModule(
-            2, 6,
+            13, 12,
             new Translation2d(-Constants.kWheelBaseX,  Constants.kWheelBaseY)
         ),
         new VortexSwerveModule(
-            3, 7,
+            17, 16,
             new Translation2d(-Constants.kWheelBaseX, -Constants.kWheelBaseY)
         ),
         new VortexSwerveModule(
-            4, 8,
+            15, 14,
             new Translation2d( Constants.kWheelBaseX, -Constants.kWheelBaseY)
         )
     };
@@ -97,6 +98,10 @@ public class DriveSubsystem extends SubsystemBase {
 
     public Pose2d getOdometricPose() {
         return this.chassis.getPose();
+    }
+
+    public void drive(ChassisSpeeds speeds, DriveFeedforwards f) {
+        this.chassis.run(new SwerveDriveState(speeds));
     }
 
     public void reConfig() {

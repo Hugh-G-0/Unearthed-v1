@@ -4,16 +4,29 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.ShooterCommand;
 import frc.robot.commands.TeleopDriveCommand;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.NavSubsystem;
+import frc.robot.subsystems.ShooterSubsystem;
 
 public class Robot extends TimedRobot {
 
+    @SuppressWarnings("unused")
+    private final Joystick
+        lctrl = new Joystick(0),
+        rctrl = new Joystick(1)
+    ;
+
     public Robot() {
         DriveSubsystem.X.register();
+        ShooterSubsystem.X.register();
+        IntakeSubsystem.X.register();
         NavSubsystem  .X.register();
 
         NavSubsystem.X.zeroAngle();
@@ -22,10 +35,33 @@ public class Robot extends TimedRobot {
     @Override
     public void robotInit() {
         DriveSubsystem.X.reConfig();
+
+        Autonomous.initialize(this);
     }
 
     @Override
     public void robotPeriodic() {
+
+        if (lctrl.getTriggerPressed()) {
+            ShooterCommand.SHOOT.get().schedule();
+        }
+        else if (lctrl.getRawButtonPressed(2)) {
+            ShooterCommand.PREP.get().schedule();
+        }
+        else if (lctrl.getTriggerReleased()) {
+            ShooterCommand.IDLE.get().schedule();
+        }
+        
+        if (rctrl.getTriggerPressed()) {
+            IntakeCommand.RUN.get().schedule();
+        }
+        else if (rctrl.getTriggerReleased()) {
+            IntakeCommand.IDLE_DOWN.get().schedule();
+        }
+        else if (rctrl.getRawButtonPressed(3)) {
+            IntakeCommand.IDLE_UP.get().schedule();
+        }
+
         CommandScheduler.getInstance().run();
     }
 
@@ -39,7 +75,9 @@ public class Robot extends TimedRobot {
     public void disabledExit() {}
 
     @Override
-    public void autonomousInit() {}
+    public void autonomousInit() {
+        Autonomous.autoChooser.getSelected().schedule();
+    }
 
     @Override
     public void autonomousPeriodic() {}
@@ -49,6 +87,8 @@ public class Robot extends TimedRobot {
 
     @Override
     public void teleopInit() {
+        CommandScheduler.getInstance().cancelAll();
+
         TeleopDriveCommand.X.schedule();
     }
 

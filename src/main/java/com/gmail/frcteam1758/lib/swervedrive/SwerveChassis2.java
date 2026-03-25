@@ -11,9 +11,7 @@ import frc.robot.subsystems.NavSubsystem;
 
 public class SwerveChassis2 extends SwerveChassis {
 
-    protected SwerveDrivePoseEstimator poseEstimator = new SwerveDrivePoseEstimator(
-        this.m_kinematics, NavSubsystem.X.getAngle(), this.getModulePositions(), this.getPose()
-    );
+    protected final SwerveDrivePoseEstimator poseEstimator;
     
     /**
      * Constructs an {@link SwerveChassis}
@@ -37,6 +35,10 @@ public class SwerveChassis2 extends SwerveChassis {
         Supplier<Rotation2d> pAngleSupplier
     ) {
         super(pCtrl, pAuto, pModules, pMaxSpeed, pAngleSupplier);
+
+        this.poseEstimator = new SwerveDrivePoseEstimator(
+            this.m_kinematics, NavSubsystem.X.getAngle(), this.getModulePositions(), new Pose2d()
+        );
     }
 
     @Override

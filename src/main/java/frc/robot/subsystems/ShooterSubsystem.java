@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import com.revrobotics.PersistMode;
 import com.revrobotics.ResetMode;
-import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkMax;
@@ -11,55 +10,53 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.commands.*;
 
 public class ShooterSubsystem extends SubsystemBase {
 
-    private final SparkFlex shootMC = new SparkFlex(-1, MotorType.kBrushless);
-    private final SparkMax  feedMC  = new SparkMax (-1, MotorType.kBrushless);
+    private final SparkFlex
+        shootMCL = new SparkFlex(23, MotorType.kBrushless),
+        shootMCR = new SparkFlex(24, MotorType.kBrushless)
+    ;
+    private final SparkMax
+        feedMCL = new SparkMax (21, MotorType.kBrushless),
+        feedMCR = new SparkMax(22, MotorType.kBrushless),
+        beltMC  = new SparkMax(25, MotorType.kBrushless)
+    ;
 
-    private final SparkClosedLoopController shootPIDF = this.shootMC.getClosedLoopController();
-    private final SparkClosedLoopController feedPIDF  = this.feedMC .getClosedLoopController();
+    private final SparkClosedLoopController shootPidfL = this.shootMCL.getClosedLoopController();
+    private final SparkClosedLoopController shootPidfR = this.shootMCR.getClosedLoopController();
 
-    public static final ShooterSubsystem X = null;//new ShooterSubsystem();
+    private final SparkClosedLoopController feedPidfL  = this.feedMCL .getClosedLoopController();
+    private final SparkClosedLoopController feedPidfR  = this.feedMCR .getClosedLoopController();
+    private final SparkClosedLoopController beltPidf   = this.beltMC  .getClosedLoopController();
+
+    public static final ShooterSubsystem X = new ShooterSubsystem();
 
     private ShooterSubsystem() {
 
-        SparkBaseConfig shootCfg = new SparkFlexConfig();
+        SparkBaseConfig flexCfg = new SparkFlexConfig();
+        SparkBaseConfig maxCFG  = new SparkMaxConfig ();
 
-        shootCfg
-            .idleMode(IdleMode.kCoast)
-            .smartCurrentLimit(50)
-        ;
-        shootCfg.closedLoop
-            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-            .pid(0, 0, 0)
-            .outputRange(-1, 1)
-        ;
-        shootCfg.closedLoop.feedForward.sva(0, 0, 0);
+        shootMCL.configure(flexCfg, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        shootMCR.configure(flexCfg, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
-        SparkBaseConfig feedCfg  = new SparkMaxConfig ();
-        
-        feedCfg
-            .idleMode(IdleMode.kBrake)
-            .smartCurrentLimit(50)
-        ;
-        feedCfg.closedLoop
-            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-            .pid(0, 0, 0)
-            .outputRange(-1, 1)
-        ;
-        feedCfg.closedLoop.feedForward.sva(0, 0, 0);
-        
-        this.shootMC.configure(shootCfg, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-        this.feedMC .configure(feedCfg , ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        feedMCL.configure(maxCFG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        feedMCR.configure(maxCFG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+        beltMC .configure(maxCFG, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+
+        //this.setDefaultCommand(ShooterCommand.IDLE.get());
     }
     
-    public void run(double shootVel, double feedVel) {
+    public void run(double shootVolts, double feedVolts, double beltVolts) {
 
-        this.shootPIDF.setSetpoint(shootVel, ControlType.kVelocity);
-        this.feedPIDF .setSetpoint(feedVel , ControlType.kVelocity);
+        this.shootPidfL.setSetpoint(-shootVolts, ControlType.kVoltage);
+        this.shootPidfR.setSetpoint( shootVolts, ControlType.kVoltage);
+
+        this.feedPidfL.setSetpoint(-beltVolts, ControlType.kVoltage);
+        this.feedPidfR.setSetpoint( beltVolts, ControlType.kVoltage);
+
+        this.beltPidf.setSetpoint(beltVolts, ControlType.kVoltage);
     }
 }

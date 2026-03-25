@@ -143,12 +143,13 @@ public class SwerveDriveControls2023 implements SwerveDriveInput {
      * @return a {@link SwerveDriveState} object for use by a {@link SwerveChassis} or similar
      */
     @Override
+    @SuppressWarnings("unreachable")
     public SwerveDriveState getCommandedState() {
 
-        if (m_rightStick.getTrigger()) {
+        if (m_leftStick.getTrigger()) {
             return SwerveDriveState.LOCKED;
         }
-        
+          
         ChassisSpeeds l_returnMe = new ChassisSpeeds(
             addDeadband(m_leftStick.getY()),
             addDeadband(m_leftStick.getX()),
